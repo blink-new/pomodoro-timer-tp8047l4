@@ -161,11 +161,11 @@ function App() {
   const progress = 1 - (timeLeft / (phase === 'work' ? workDuration * 60 : breakDuration * 60))
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-6xl bg-white rounded-2xl shadow-xl flex gap-8 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center p-6">
+      <div className="w-full max-w-7xl bg-white rounded-3xl shadow-2xl overflow-hidden flex">
         {/* Left side - Timer */}
-        <div className="flex-1 flex flex-col items-center justify-center">
-          <div className="relative aspect-square w-full max-w-md">
+        <div className="flex-1 bg-gradient-to-br from-slate-50 to-white p-12 flex flex-col items-center justify-center border-r border-slate-100">
+          <div className="relative aspect-square w-full max-w-lg">
             {/* Circular progress */}
             <svg className="w-full h-full -rotate-90 transform">
               <circle
@@ -173,32 +173,35 @@ function App() {
                 cy="50%"
                 r="45%"
                 className="stroke-slate-100 fill-none"
-                strokeWidth="5%"
+                strokeWidth="4%"
               />
               <circle
                 cx="50%"
                 cy="50%"
                 r="45%"
                 className={`${
-                  phase === 'work' ? 'stroke-blue-500' : 'stroke-green-500'
-                } fill-none transition-all duration-300`}
-                strokeWidth="5%"
+                  phase === 'work' ? 'stroke-blue-500' : 'stroke-emerald-500'
+                } fill-none transition-all duration-300 ease-in-out`}
+                strokeWidth="4%"
                 strokeDasharray={`${progress * 283} 283`}
+                style={{
+                  filter: 'drop-shadow(0 0 6px rgba(59, 130, 246, 0.5))'
+                }}
               />
             </svg>
             
             {/* Timer display */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <div className="text-6xl font-bold text-slate-700 mb-2">
+              <div className="text-7xl font-bold bg-gradient-to-r from-slate-700 to-slate-900 bg-clip-text text-transparent mb-3">
                 {formatTime(timeLeft)}
               </div>
-              <div className={`text-xl font-medium ${
-                phase === 'work' ? 'text-blue-500' : 'text-green-500'
+              <div className={`text-2xl font-medium mb-2 ${
+                phase === 'work' ? 'text-blue-500' : 'text-emerald-500'
               }`}>
                 {phase === 'work' ? 'Focus Time' : 'Break Time'}
               </div>
               {selectedTodoId && (
-                <div className="text-sm text-slate-500 mt-2">
+                <div className="text-base text-slate-500 max-w-sm text-center">
                   {todos.find(t => t.id === selectedTodoId)?.text}
                 </div>
               )}
@@ -206,79 +209,81 @@ function App() {
           </div>
 
           {/* Controls */}
-          <div className="flex justify-center gap-4 mt-8">
+          <div className="flex justify-center gap-6 mt-12">
             <button
               onClick={toggleTimer}
-              className={`p-4 rounded-full transition-colors ${
+              className={`p-5 rounded-2xl transition-all duration-200 transform hover:scale-105 ${
                 !selectedTodoId && status !== 'running'
                   ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                  : 'bg-blue-500 text-white hover:bg-blue-600 shadow-lg hover:shadow-xl'
               }`}
             >
               {status === 'running' ? (
-                <Pause className="w-6 h-6" />
+                <Pause className="w-8 h-8" />
               ) : (
-                <Play className="w-6 h-6" />
+                <Play className="w-8 h-8" />
               )}
             </button>
             
             <button
               onClick={resetTimer}
-              className="p-4 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors"
+              className="p-5 rounded-2xl bg-slate-100 hover:bg-slate-200 transition-all duration-200 transform hover:scale-105"
             >
-              <RotateCcw className="w-6 h-6 text-slate-700" />
+              <RotateCcw className="w-8 h-8 text-slate-700" />
             </button>
             
             <button
               onClick={() => setIsSoundOn(!isSoundOn)}
-              className="p-4 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors"
+              className="p-5 rounded-2xl bg-slate-100 hover:bg-slate-200 transition-all duration-200 transform hover:scale-105"
             >
               {isSoundOn ? (
-                <Volume2 className="w-6 h-6 text-slate-700" />
+                <Volume2 className="w-8 h-8 text-slate-700" />
               ) : (
-                <VolumeX className="w-6 h-6 text-slate-700" />
+                <VolumeX className="w-8 h-8 text-slate-700" />
               )}
             </button>
           </div>
         </div>
 
         {/* Right side - Todo List and Stats */}
-        <div className="flex-1 flex flex-col max-w-md">
-          {/* Todo List */}
-          <div className="flex-1">
-            <form onSubmit={addTodo} className="flex gap-2 mb-4">
+        <div className="flex-1 p-8 flex flex-col max-w-2xl bg-white">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-slate-800 mb-6">Tasks</h2>
+            <form onSubmit={addTodo} className="flex gap-3 mb-6">
               <input
                 type="text"
                 value={newTodo}
                 onChange={(e) => setNewTodo(e.target.value)}
                 placeholder="Add a new task..."
-                className="flex-1 px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 px-4 py-3 rounded-xl border-2 border-slate-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
               />
               <button
                 type="submit"
-                className="p-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+                className="px-4 rounded-xl bg-blue-500 text-white hover:bg-blue-600 transition-all duration-200 shadow-md hover:shadow-lg"
               >
                 <Plus className="w-6 h-6" />
               </button>
             </form>
+          </div>
 
-            <div className="space-y-2 h-[calc(100vh-24rem)] overflow-y-auto pr-2">
+          <div className="flex-1 overflow-hidden flex flex-col">
+            <div className="flex-1 overflow-y-auto pr-4 space-y-3 custom-scrollbar">
               {todos.map(todo => (
                 <div
                   key={todo.id}
-                  className={`p-3 rounded-lg border ${
+                  className={`p-4 rounded-xl border-2 transition-all duration-200 ${
                     selectedTodoId === todo.id
                       ? 'border-blue-500 bg-blue-50'
-                      : 'border-slate-200'
+                      : 'border-slate-100 hover:border-slate-200'
                   } ${
                     todo.completed ? 'bg-slate-50' : ''
                   }`}
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <button
                       onClick={() => toggleTodoComplete(todo.id)}
-                      className={`p-1 rounded ${
-                        todo.completed ? 'text-green-500' : 'text-slate-400'
+                      className={`p-1.5 rounded-lg transition-colors ${
+                        todo.completed ? 'bg-emerald-100 text-emerald-500' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
                       }`}
                     >
                       <Check className="w-5 h-5" />
@@ -288,30 +293,32 @@ function App() {
                       className="flex-1 cursor-pointer"
                       onClick={() => setSelectedTodoId(todo.id)}
                     >
-                      <div className={`${todo.completed ? 'line-through text-slate-500' : ''}`}>
+                      <div className={`font-medium ${todo.completed ? 'line-through text-slate-400' : 'text-slate-700'}`}>
                         {todo.text}
                       </div>
-                      <div className="text-sm text-slate-500">
+                      <div className="text-sm text-slate-500 mt-1">
                         {todo.completedPomodoros}/{todo.estimatedPomodoros} pomodoros
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => adjustPomodoros(todo.id, -1)}
-                        className="p-1 text-slate-400 hover:text-slate-600"
-                      >
-                        <ChevronDown className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => adjustPomodoros(todo.id, 1)}
-                        className="p-1 text-slate-400 hover:text-slate-600"
-                      >
-                        <ChevronUp className="w-4 h-4" />
-                      </button>
+                    <div className="flex items-center gap-2">
+                      <div className="flex bg-slate-100 rounded-lg">
+                        <button
+                          onClick={() => adjustPomodoros(todo.id, -1)}
+                          className="p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded-l-lg transition-colors"
+                        >
+                          <ChevronDown className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => adjustPomodoros(todo.id, 1)}
+                          className="p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded-r-lg transition-colors"
+                        >
+                          <ChevronUp className="w-4 h-4" />
+                        </button>
+                      </div>
                       <button
                         onClick={() => deleteTodo(todo.id)}
-                        className="p-1 text-red-400 hover:text-red-600"
+                        className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -323,20 +330,21 @@ function App() {
           </div>
 
           {/* Stats */}
-          <div className="bg-slate-50 rounded-xl p-4 mt-4">
-            <h3 className="text-slate-700 font-medium mb-2">Today's Progress</h3>
+          <div className="mt-6 bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 text-white shadow-lg">
+            <h3 className="text-lg font-medium mb-4">Today's Progress</h3>
             <div className="flex justify-between">
               <div>
-                <div className="text-2xl font-bold text-slate-700">
+                <div className="text-3xl font-bold mb-1">
                   {stats?.find(s => s.date === new Date().toISOString().split('T')[0])?.completedPomodoros || 0}
                 </div>
-                <div className="text-sm text-slate-500">Pomodoros</div>
+                <div className="text-sm text-slate-400">Pomodoros</div>
               </div>
+              <div className="h-12 w-px bg-slate-700"></div>
               <div>
-                <div className="text-2xl font-bold text-slate-700">
+                <div className="text-3xl font-bold mb-1">
                   {Math.round((stats?.find(s => s.date === new Date().toISOString().split('T')[0])?.totalFocusTime || 0) / 60)}h
                 </div>
-                <div className="text-sm text-slate-500">Focus Time</div>
+                <div className="text-sm text-slate-400">Focus Time</div>
               </div>
             </div>
           </div>

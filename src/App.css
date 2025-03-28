@@ -3,40 +3,24 @@
 @tailwind components;
 @tailwind utilities;
 
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #CBD5E1 transparent;
 }
 
-.animate-pulse-slow {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
 }
 
-/* Smooth transitions */
-.transition-all {
-  transition-property: all;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #CBD5E1;
+  border-radius: 20px;
 }
 
-::-webkit-scrollbar-track {
-  background: #f1f5f9;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #94A3B8;
 }
