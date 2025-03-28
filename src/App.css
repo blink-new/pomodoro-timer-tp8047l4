@@ -24,3 +24,20 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: #94A3B8;
 }
+
+/* Add text ellipsis animation for truncated text */
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Hover effect to show full text */
+.truncate:hover {
+  white-space: normal;
+  overflow: visible;
+  background-color: white;
+  position: relative;
+  z-index: 10;
+}
