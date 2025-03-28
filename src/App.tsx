@@ -47,16 +47,13 @@ function App() {
       interval = window.setInterval(() => {
         setTimeLeft((time) => {
           if (time <= 1) {
-            // Timer completed
             const newPhase = phase === 'work' ? 'break' : 'work'
             setPhase(newPhase)
             
-            // Update stats and todo progress if work phase completed
             if (phase === 'work') {
               const today = new Date().toISOString().split('T')[0]
               const todayStats = stats?.find(s => s.date === today)
               
-              // Update stats
               if (todayStats) {
                 setStats(stats.map(s => 
                   s.date === today 
@@ -75,7 +72,6 @@ function App() {
                 }])
               }
 
-              // Update selected todo progress
               if (selectedTodoId) {
                 setTodos(todos.map(todo => 
                   todo.id === selectedTodoId
@@ -89,7 +85,6 @@ function App() {
               }
             }
             
-            // Reset timer for next phase
             return newPhase === 'work' ? workDuration * 60 : breakDuration * 60
           }
           return time - 1
@@ -165,7 +160,6 @@ function App() {
         {/* Timer Section */}
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <div className="relative aspect-square mb-8">
-            {/* Circular progress */}
             <svg className="w-full h-full -rotate-90 transform">
               <circle
                 cx="50%"
@@ -186,7 +180,6 @@ function App() {
               />
             </svg>
             
-            {/* Timer display */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <div className="text-5xl font-bold text-slate-700 mb-2">
                 {formatTime(timeLeft)}
@@ -197,18 +190,17 @@ function App() {
                 {phase === 'work' ? 'Focus Time' : 'Break Time'}
               </div>
               {selectedTodoId && (
-                <div className="text-sm text-slate-500 mt-2">
+                <div className="text-sm text-slate-500 mt-2 max-w-[80%] text-center truncate">
                   {todos.find(t => t.id === selectedTodoId)?.text}
                 </div>
               )}
             </div>
           </div>
 
-          {/* Controls */}
           <div className="flex justify-center gap-4 mb-8">
             <button
               onClick={toggleTimer}
-              className="p-4 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors"
+              className="p-4 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors active:scale-95"
             >
               {status === 'running' ? (
                 <Pause className="w-6 h-6 text-slate-700" />
@@ -219,14 +211,14 @@ function App() {
             
             <button
               onClick={resetTimer}
-              className="p-4 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors"
+              className="p-4 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors active:scale-95"
             >
               <RotateCcw className="w-6 h-6 text-slate-700" />
             </button>
             
             <button
               onClick={() => setIsSoundOn(!isSoundOn)}
-              className="p-4 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors"
+              className="p-4 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors active:scale-95"
             >
               {isSoundOn ? (
                 <Volume2 className="w-6 h-6 text-slate-700" />
@@ -236,7 +228,6 @@ function App() {
             </button>
           </div>
 
-          {/* Stats */}
           <div className="bg-slate-50 rounded-xl p-4">
             <h3 className="text-slate-700 font-medium mb-2">Today's Progress</h3>
             <div className="flex justify-between">
@@ -260,7 +251,6 @@ function App() {
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <h2 className="text-2xl font-bold text-slate-700 mb-6">Tasks</h2>
           
-          {/* Add Todo Form */}
           <form onSubmit={addTodo} className="flex gap-2 mb-6">
             <input
               type="text"
@@ -271,84 +261,87 @@ function App() {
             />
             <button
               type="submit"
-              className="p-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+              className="p-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors active:scale-95"
             >
               <Plus className="w-6 h-6" />
             </button>
           </form>
 
-          {/* Todo List */}
-          <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+          <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
             {todos.map(todo => (
               <div
                 key={todo.id}
-                className={`p-4 rounded-xl border ${
+                onClick={() => setSelectedTodoId(selectedTodoId === todo.id ? null : todo.id)}
+                className={`group relative p-4 rounded-xl border cursor-pointer transition-all duration-200 hover:shadow-md ${
                   selectedTodoId === todo.id
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-slate-200'
+                    ? 'border-blue-500 bg-blue-50 shadow-md'
+                    : 'border-slate-200 hover:border-blue-200'
                 } ${
                   todo.completed ? 'bg-slate-50' : ''
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <button
-                    onClick={() => toggleTodoComplete(todo.id)}
-                    className={`p-1 rounded ${
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      toggleTodoComplete(todo.id)
+                    }}
+                    className={`p-1.5 rounded-full transition-colors ${
                       todo.completed
                         ? 'bg-green-500 text-white'
-                        : 'border border-slate-300'
+                        : 'border-2 border-slate-300 hover:border-green-500'
                     }`}
                   >
                     {todo.completed && <Check className="w-4 h-4" />}
                   </button>
                   
-                  <span className={`flex-1 ${
-                    todo.completed ? 'line-through text-slate-500' : ''
+                  <span className={`flex-1 text-lg transition-colors ${
+                    todo.completed ? 'line-through text-slate-500' : 'text-slate-700'
                   }`}>
                     {todo.text}
                   </span>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 opacity-70 group-hover:opacity-100 transition-opacity">
                     <button
-                      onClick={() => adjustPomodoros(todo.id, -1)}
-                      className="p-1 text-slate-500 hover:text-slate-700"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        adjustPomodoros(todo.id, -1)
+                      }}
+                      className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition-colors"
                     >
                       -
                     </button>
-                    <div className="flex items-center">
+                    <div className="flex items-center bg-slate-100 px-2 py-1 rounded-lg">
                       <Clock className="w-4 h-4 text-slate-500 mr-1" />
-                      <span className="text-sm text-slate-700">
+                      <span className="text-sm font-medium text-slate-700">
                         {todo.completedPomodoros}/{todo.pomodoros}
                       </span>
                     </div>
                     <button
-                      onClick={() => adjustPomodoros(todo.id, 1)}
-                      className="p-1 text-slate-500 hover:text-slate-700"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        adjustPomodoros(todo.id, 1)
+                      }}
+                      className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition-colors"
                     >
                       +
                     </button>
                   </div>
 
                   <button
-                    onClick={() => setSelectedTodoId(
-                      selectedTodoId === todo.id ? null : todo.id
-                    )}
-                    className={`p-2 rounded-lg ${
-                      selectedTodoId === todo.id
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                    }`}
-                  >
-                    <Play className="w-4 h-4" />
-                  </button>
-
-                  <button
-                    onClick={() => deleteTodo(todo.id)}
-                    className="p-2 rounded-lg text-red-500 hover:bg-red-50"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      deleteTodo(todo.id)
+                    }}
+                    className="p-2 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all ml-2"
                   >
                     <X className="w-4 h-4" />
                   </button>
                 </div>
+
+                <div className={`absolute bottom-0 left-0 right-0 h-1 rounded-b-xl bg-blue-500 transition-all duration-300 ${
+                  selectedTodoId === todo.id ? 'opacity-100' : 'opacity-0'
+                }`} />
               </div>
             ))}
           </div>
