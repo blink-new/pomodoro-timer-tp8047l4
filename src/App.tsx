@@ -4,10 +4,135 @@ import { Play, Pause, RotateCcw, Volume2, VolumeX, Plus, Check, X, ChevronUp, Ch
 import { useLocalStorage } from 'react-use'
 import './App.css'
 
-// ... keep existing types ...
+interface Todo {
+  id: string
+  text: string
+  completed: boolean
+  estimatedPomodoros: number
+  completedPomodoros: number
+}
+
+interface DailyStats {
+  date: string
+  completedPomodoros: number
+  totalFocusTime: number
+}
+
+function formatTime(seconds: number): string {
+  const minutes = Math.floor(seconds / 60)
+  const remainingSeconds = seconds % 60
+  return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`
+}
 
 function App() {
-  // ... keep existing state and effects ...
+  const [timeLeft, setTimeLeft] = useState(25 * 60)
+  const [isRunning, setIsRunning] = useState(false)
+  const [phase, setPhase] = useState<'work' | 'break'>('work')
+  const [isMuted, setIsMuted] = useState(false)
+  const [newTodo, setNewTodo] = useState('')
+  const [selectedTodoId, setSelectedTodoId] = useState<string | null>(null)
+  const [todos, setTodos] = useLocalStorage<Todo[]>('todos', [])
+  const [stats, setStats] = useLocalStorage<DailyStats[]>('stats', [])
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null
+
+    if (isRunning && timeLeft > 0) {
+      interval = setInterval(() => {
+        setTimeLeft(time => time - 1)
+      }, 1000)
+    } else if (timeLeft === 0) {
+      if (!isMuted) {
+        const audio = new Audio('/notification.mp3')
+        audio.play()
+      }
+      
+      if (phase === 'work') {
+        setTimeLeft(5 * 60) // 5 minute break
+        setPhase('break')
+        
+        // Update stats
+        const today = new Date().toISOString().split('T')[0]
+        const todayStats = stats.find(s => s.date === today)
+        
+        if (todayStats) {
+          setStats(stats.map(s => 
+            s.date === today 
+              ? { ...s, completedPomodoros: s.completedPomodoros + 1, totalFocusTime: s.totalFocusTime + 25 * 60 }
+              : s
+          ))
+        } else {
+          setStats([...stats, { date: today, completedPomodoros: 1, totalFocusTime: 25 * 60 }])
+        }
+
+        // Update selected todo if exists
+        if (selectedTodoId) {
+          setTodos(todos.map(todo =>
+            todo.id === selectedTodoId
+              ? { ...todo, completedPomodoros: todo.completedPomodoros + 1 }
+              : todo
+          ))
+        }
+      } else {
+        setTimeLeft(25 * 60) // 25 minute work session
+        setPhase('work')
+      }
+    }
+
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [isRunning, timeLeft, phase, isMuted, selectedTodoId, todos, stats])
+
+  const toggleTimer = () => {
+    setIsRunning(!isRunning)
+  }
+
+  const resetTimer = () => {
+    setIsRunning(false)
+    setTimeLeft(phase === 'work' ? 25 * 60 : 5 * 60)
+  }
+
+  const toggleMute = () => {
+    setIsMuted(!isMuted)
+  }
+
+  const addTodo = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newTodo.trim()) return
+
+    const todo: Todo = {
+      id: Date.now().toString(),
+      text: newTodo.trim(),
+      completed: false,
+      estimatedPomodoros: 1,
+      completedPomodoros: 0
+    }
+
+    setTodos([...todos, todo])
+    setNewTodo('')
+  }
+
+  const toggleTodoComplete = (id: string) => {
+    setTodos(todos.map(todo =>
+      todo.id === id ? { ...todo, completed: !todo.completed } : todo
+    ))
+  }
+
+  const deleteTodo = (id: string) => {
+    setTodos(todos.filter(todo => todo.id !== id))
+    if (selectedTodoId === id) {
+      setSelectedTodoId(null)
+    }
+  }
+
+  const adjustPomodoros = (id: string, change: number) => {
+    setTodos(todos.map(todo =>
+      todo.id === id
+        ? { ...todo, estimatedPomodoros: Math.max(1, todo.estimatedPomodoros + change) }
+        : todo
+    ))
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center p-6">
@@ -15,7 +140,28 @@ function App() {
         {/* Left side - Timer */}
         <div className="flex-1 bg-gradient-to-br from-slate-50 to-white p-8 md:p-12 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-slate-100">
           <div className="relative aspect-square w-full max-w-lg">
-            {/* ... keep existing timer SVG and display ... */}
+            <svg className="w-full h-full" viewBox="0 0 100 100">
+              <circle
+                cx="50"
+                cy="50"
+                r="45"
+                fill="none"
+                stroke="#f1f5f9"
+                strokeWidth="10"
+              />
+              <circle
+                cx="50"
+                cy="50"
+                r="45"
+                fill="none"
+                stroke={phase === 'work' ? '#3b82f6' : '#10b981'}
+                strokeWidth="10"
+                strokeDasharray={`${2 * Math.PI * 45}`}
+                strokeDashoffset={`${2 * Math.PI * 45 * (1 - timeLeft / (phase === 'work' ? 25 * 60 : 5 * 60))}`}
+                transform="rotate(-90 50 50)"
+                className="transition-all duration-1000"
+              />
+            </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <div className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-slate-700 to-slate-900 bg-clip-text text-transparent mb-3">
                 {formatTime(timeLeft)}
@@ -35,7 +181,30 @@ function App() {
             </div>
           </div>
 
-          {/* ... keep existing controls ... */}
+          <div className="flex gap-4 mt-8">
+            <button
+              onClick={toggleTimer}
+              className={`p-4 rounded-2xl ${
+                isRunning
+                  ? 'bg-red-500 hover:bg-red-600 text-white'
+                  : 'bg-blue-500 hover:bg-blue-600 text-white'
+              } transition-all duration-200 shadow-lg hover:shadow-xl`}
+            >
+              {isRunning ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
+            </button>
+            <button
+              onClick={resetTimer}
+              className="p-4 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-all duration-200"
+            >
+              <RotateCcw className="w-6 h-6" />
+            </button>
+            <button
+              onClick={toggleMute}
+              className="p-4 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-all duration-200"
+            >
+              {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
+            </button>
+          </div>
         </div>
 
         {/* Right side - Todo List and Stats */}
