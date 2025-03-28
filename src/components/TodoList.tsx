@@ -3,28 +3,26 @@ import { Plus, Check, X, ChevronUp, ChevronDown } from 'lucide-react'
 import { useState } from 'react'
 import { TodoListProps, Todo } from '../types'
 
+interface ExtendedTodoListProps extends TodoListProps {
+  onAddTodo: (text: string) => void
+}
+
 export function TodoList({
   todos,
   selectedTodoId,
   onTodoSelect,
   onTodoComplete,
   onTodoDelete,
-  onPomodorosAdjust
-}: TodoListProps) {
+  onPomodorosAdjust,
+  onAddTodo
+}: ExtendedTodoListProps) {
   const [newTodo, setNewTodo] = useState('')
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!newTodo.trim()) return
 
-    const todo: Todo = {
-      id: Date.now().toString(),
-      text: newTodo.trim(),
-      completed: false,
-      estimatedPomodoros: 1,
-      completedPomodoros: 0
-    }
-
+    onAddTodo(newTodo)
     setNewTodo('')
   }
 

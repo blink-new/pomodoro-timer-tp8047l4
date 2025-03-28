@@ -31,6 +31,7 @@ export interface TodoListProps {
   onTodoComplete: (id: string) => void
   onTodoDelete: (id: string) => void
   onPomodorosAdjust: (id: string, change: number) => void
+  onAddTodo: (text: string) => void
 }
 
 export interface StatsProps {
